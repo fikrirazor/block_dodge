@@ -5,11 +5,13 @@ signal hit
 export (int) var SPEED
 var velocity = Vector2()
 var screensize
+var anim = ""
 
 func _ready():
 	hide()
 	screensize = get_viewport_rect().size
-	
+
+
 func start(pos):
 	position = pos
 	show()
@@ -17,23 +19,29 @@ func start(pos):
 			
 func _process(delta):
 	velocity = Vector2()
-	if Input.is_action_pressed("ui_right"):
+	var state = "idle"
+	var press_right = Input.is_action_pressed("ui_right")
+	var press_left = Input.is_action_pressed("ui_left")
+	
+	# Move Left or right
+	if press_right:
 		velocity.x += 1
-	if Input.is_action_pressed("ui_left"):
+		state = "right"
+	if press_left: 
 		velocity.x -= 1
+		state = "left"
+	
+	
 	if velocity.length() > 0:
 		velocity = velocity.normalized() * SPEED
-		$AnimatedSprite.play()
+		$AnimatedSprite.play(state)
 	else:
 		$AnimatedSprite.stop()
-		
+	
 	position += velocity * delta
 	position.x = clamp(position.x, 0, screensize.x)
-
-	if velocity.x != 0:
-		$AnimatedSprite.animation = "right"
-		$AnimatedSprite.flip_v = false
-		$AnimatedSprite.flip_h = velocity.x < 0
+	if(state != anim):
+		anim = state
 
 func _on_Player_body_entered( body ):
 	$Collision.disabled = true
